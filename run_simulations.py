@@ -4,7 +4,7 @@
 import numpy as np
 import pickle
 from glhmm import glhmm, auxiliary
-from sklearn.svm import SVC
+from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import accuracy_score
 
 
@@ -167,7 +167,7 @@ def plot_simulation_results(filename):
 
     # Set labels and legend 
     ax0.set_xlabel('Time Index')
-    ax0.set_ylabel('SVM Acc (Mean ± SE)')
+    ax0.set_ylabel('Acc (Mean ± SE)')
     ax0.set_title(f'Example ($p$:{p}, $σ$:{np.round(rate,2)})')
     ax0.legend() 
 
@@ -186,7 +186,7 @@ def plot_simulation_results(filename):
     ax2.set_title('Cov HMM')
     ax2.set_yticks(range(len(sigma_range)), [])
     cbar2 = fig.colorbar(im2) 
-    cbar2.set_label('SVM Acc')
+    cbar2.set_label('Acc')
     ax2.set_xticks(range(0, len(p_range), 2)) 
     ax2.set_xticklabels(labels_p_range[0:len(p_range):2]) 
 
@@ -201,7 +201,7 @@ def plot_simulation_results(filename):
     ax3.set_xticks(range(0, len(p_range), 2)) 
     ax3.set_xticklabels(labels_p_range[0:len(p_range):2]) 
     cbar3 = fig.colorbar(im3)
-    cbar3.set_label('SVM Acc Diff')   
+    cbar3.set_label('Acc Diff')   
 
     plt.show()
 
@@ -337,7 +337,7 @@ for rep in range(nrep):
                                             Gamma=gamma_init
                                             )
 
-            # Evaluate models using SVM
+            # Evaluate models
             g_ct=gamma_ct.reshape(nTrial,nTime,-1)
             g_fc=gamma_fc.reshape(nTrial,nTime,-1)
 
@@ -348,12 +348,12 @@ for rep in range(nrep):
                 # Extract gamma values at the current timepoint
                 Xt = g_ct[:, t, :]  # Assuming g_ct has shape (nTime, nTrial, K)
                 
-                # Train an SVM classifier
-                svm_model = SVC(kernel='linear')
-                svm_model.fit(Xt, trial_labels.ravel())
+                # Train Logistic regression model
+                log_reg = LogisticRegression()
+                log_reg.fit(Xt, trial_labels.ravel())
                 
                 # Predict trial conditions for the current timepoint
-                predictions = svm_model.predict(Xt)
+                predictions = log_reg.predict(Xt)
                 
                 # Calculate accuracy for the current timepoint
                 yct.append(accuracy_score(trial_labels, predictions))
@@ -363,12 +363,12 @@ for rep in range(nrep):
                 # Extract gamma values at the current timepoint
                 Xt = g_fc[:, t, :]  # Assuming g_ct has shape (nTime, nTrial, K)
                 
-                # Train an SVM classifier
-                svm_model = SVC(kernel='linear')
-                svm_model.fit(Xt, trial_labels.ravel())
+                # Train Logistic regression model
+                log_reg = LogisticRegression()
+                log_reg.fit(Xt, trial_labels.ravel())
                 
                 # Predict trial conditions for the current timepoint
-                predictions = svm_model.predict(Xt)
+                predictions = log_reg.predict(Xt)
                 
                 # Calculate accuracy for the current timepoint
                 yfc.append(accuracy_score(trial_labels, predictions))
@@ -387,4 +387,3 @@ with open(filename, "wb") as f:
 
 # PLOT RESULTS
 plot_simulation_results(filename)
-
